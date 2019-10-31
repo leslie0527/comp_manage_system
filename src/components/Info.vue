@@ -25,6 +25,16 @@
       </el-table>
     </el-main>
     <el-form ref="form" :model="form" label-width="80px" v-else>
+      <el-upload
+        class="avatar-uploader"
+        action="https://jsonplaceholder.typicode.com/posts/"
+        :show-file-list="false"
+        :on-success="handleAvatarSuccess"
+        :before-upload="beforeAvatarUpload"
+      >
+        <img v-if="form.imageUrl" :src="form.imageUrl" class="avatar" />
+        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+      </el-upload>
       <el-form-item label="姓名">
         <el-input v-model="form.name"></el-input>
       </el-form-item>
@@ -45,9 +55,7 @@
       </el-form-item>
       <el-form-item label="所属部门">
         <el-radio-group v-model="form.dep">
-          <el-radio label="销售"></el-radio>
-          <el-radio label="技术"></el-radio>
-          <el-radio label="人事"></el-radio>
+          <el-radio :label="item.id" v-for="(item,key) in depArr" v-bind:key="key">{{item.name}}</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item>
@@ -55,52 +63,61 @@
       </el-form-item>
     </el-form>
     <el-dialog title="收货地址" :visible.sync="dialogFormVisible">
-  <el-form :model="form">
-    <el-form-item label="员工姓名" label-width="120px">
-      <el-input v-model="form.name" autocomplete="off"></el-input>
-    </el-form-item>
-    <el-form-item label="员工编号" label-width="120px">
-      <el-input v-model="form.num" autocomplete="off"></el-input>
-    </el-form-item>
-    <el-form-item label="性别">
-        <el-radio-group v-model="form.sex">
-          <el-radio label="男"></el-radio>
-          <el-radio label="女"></el-radio>
-        </el-radio-group>
-      </el-form-item>
-    <el-form-item label="状态" label-width="120px">
-      <el-select v-model="form.state" placeholder="请选择员工状态">
-        <el-option label="在职" value="在职"></el-option>
-        <el-option label="离职" value="离职"></el-option>
-      </el-select>
-    </el-form-item>
+      <el-form :model="form">
+        <el-form-item label="员工姓名" label-width="120px">
+          <el-input v-model="form.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="员工编号" label-width="120px">
+          <el-input v-model="form.num" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-radio-group v-model="form.sex">
+            <el-radio label="男"></el-radio>
+            <el-radio label="女"></el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="状态" label-width="120px">
+          <el-select v-model="form.state" placeholder="请选择员工状态">
+            <el-option label="在职" value="在职"></el-option>
+            <el-option label="离职" value="离职"></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="所属部门" label-width="120px">
-      <el-select v-model="form.dep" placeholder="请选择员工所属部门">
-        <el-option label="销售" value="销售"></el-option>
-        <el-option label="技术" value="技术"></el-option>
-        <el-option label="人事" value="人事"></el-option>
-      </el-select>
-    </el-form-item>
-  </el-form>
-  <div slot="footer" class="dialog-footer">
-    <el-button @click="dialogFormVisible = false">取 消</el-button>
-    <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-  </div>
-</el-dialog>
+          <el-select v-model="form.dep" placeholder="请选择员工所属部门">
+            <el-option label="销售部" value="销售部"></el-option>
+            <el-option label="技术部" value="技术部"></el-option>
+            <el-option label="人事部" value="人事部"></el-option>
+            <el-option label="产品部" value="产品部"></el-option>
+            <el-option label="财务部" value="财务部"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
+import gql from "graphql-tag";
 export default {
   data() {
     return {
       isManage: false,
+      userId: "",
       dialogFormVisible: false,
+      depArr:{},
+      // imageUrl: '',
       form: {
         name: "王小虎",
         num: "NO.1",
         sex: "男",
         state: "在职",
-        dep: "销售"
+        dep: "销售",
+        imageUrl: "",
+        quitTime: "2099-12-31",
+        numbered: ""
       },
       tableData: [
         {
@@ -135,19 +152,183 @@ export default {
   },
   created() {
     this.isManage = parseInt(this.$route.query.isManage);
+    this.userId = parseInt(this.$route.query.id);
+    console.log(this.userId);
+    this.$apollo
+      .mutate({
+        // Query
+        mutation: gql`
+          query($id: Int) {
+            memberInfo {
+              detail(id: $id) {
+                imgPath
+                quitTime
+                numbered
+                state
+                sex
+                name
+                departmentId {
+                  name,
+                  id
+                }
+              }
+            }
+          }
+        `,
+        // Parameters
+        variables: {
+          id: this.userId
+        }
+      })
+      .then(data => {
+        // console.log(this.form);
+        console.log(data);
+        this.form.imageUrl = data.data.memberInfo.imgPath;
+        this.form.name = data.data.memberInfo.detail.name;
+        this.form.num = data.data.memberInfo.detail.numbered;
+        this.form.sex = data.data.memberInfo.detail.sex == 10 ? "男" : "女";
+        this.form.state =
+          data.data.memberInfo.detail.state == 10 ? "在职" : "离职";
+        this.form.dep = data.data.memberInfo.detail.departmentId.id;
+        this.form.numbered = data.data.memberInfo.detail.numbered;
+      })
+      .catch(error => {
+        console.log(error);
+      });
     //   console.log(!this.isManage);
+    this.$apollo
+      .mutate({
+        // Query
+        mutation: gql`
+          query {
+            department {
+              search(name: "", page: 1) {
+                name
+                id
+              }
+            }
+          }
+        `,
+        // Parameters
+      })
+      .then(data => {
+        console.log(data.data.department.search);
+        // console.log(data.data.department.search);
+        this.depArr = data.data.department.search;
+      })
+      .catch(error => {
+        console.log(error);
+      });
   },
   methods: {
-    onSubmit() {},
+    onSubmit() {
+      // console.log(document.getElementsByClassName("avatar")[0].to)
+      console.log(this.form);
+      this.$apollo
+        .mutate({
+          // Query
+          mutation: gql`
+            mutation(
+              $id: Int!
+              $imgPath: String
+              $quitTime: String
+              $numbered: Int
+              $state: String
+              $sex: String
+              $name: String
+              $departmentId: Int
+              $memberId: Int
+            ) {
+              memberInfo {
+                update(
+                  id: $id
+                  imgPath: $imgPath
+                  quitTime: $quitTime
+                  numbered: $numbered
+                  state: $state
+                  sex: $sex
+                  name: $name
+                  departmentId: $departmentId
+                  memberId: $memberId
+                ) {
+                  id
+                }
+              }
+            }
+          `,
+          // Parameters
+          variables: {
+            id: this.userId,
+            imgPath: this.form.imageUrl,
+            quitTime: this.form.quitTime,
+            numbered: this.form.numbered,
+            state: this.form.state == "在职" ? 10 : 20,
+            sex: this.form.sex == "男" ? 10 : 20,
+            name: this.form.name,
+            departmentId: this.form.dep,
+            memberId: 10
+          }
+        })
+        .then(data => {
+          // console.log(this.form);
+          console.log(data);
+          // this.$router.push({ path: "/info", query: { isManage: 0,id:data.data.member.login.id } });
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
     // handleClick(row) {
     //     console.log(row);
     //   },
-      editPerson(row){
-        console.log(row);
-        this.dialogFormVisible = !this.dialogFormVisible
+    editPerson(row) {
+      console.log(row);
+      this.dialogFormVisible = !this.dialogFormVisible;
+    },
+    handleAvatarSuccess(res, file) {
+      console.log(file);
+      this.form.imageUrl = URL.createObjectURL(file.raw);
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === "image/jpeg";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error("上传头像图片只能是 JPG 格式!");
       }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isJPG && isLt2M;
+    }
   }
 };
 </script>
 <style>
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  margin: 10px;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

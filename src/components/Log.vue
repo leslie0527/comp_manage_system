@@ -1,16 +1,25 @@
 <template>
   <div class="body">
     <el-tabs v-model="activeName" @tab-click="handleClick">
-      <el-tab-pane :label="date == 'log-dLog'?'历史日志':date == 'log-wLog'?'历史周志':'历史月至'" name="first">
-              <el-main>
-      <el-table :data="tableData">
-        <el-table-column prop="title" label="标题" width="200"></el-table-column>
-        <el-table-column prop="data" label="内容" width="800"></el-table-column>
-        <el-table-column prop="time" label="时间"></el-table-column>
-      </el-table>
-    </el-main>
+      <el-tab-pane label="历史记录" name="first">
+        <el-main>
+          <el-table :data="tableData">
+            <el-table-column prop="title" label="标题" width="200"></el-table-column>
+            <el-table-column prop="content" label="内容" width="500"></el-table-column>
+            <el-table-column prop="create_time" label="时间" width="200"></el-table-column>
+            <el-table-column prop="type" width="200"></el-table-column>
+            <el-table-column fixed="right" label="操作" width="100">
+              <template slot-scope="scope">
+                <el-button type="text" @click="editPerson(scope.row)" size="small">查看详情</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-main>
       </el-tab-pane>
-      <el-tab-pane :label="date == 'log-dLog'?'创建日志':date == 'log-wLog'?'创建周志':'创建月至'" name="second">
+      <el-tab-pane
+        :label="date == 'log-dLog'?'创建日志':date == 'log-wLog'?'创建周志':'创建月至'"
+        name="second"
+      >
         <el-form ref="form" :model="form" label-width="80px">
           <el-form-item :label="date == 'log-dLog'?'日志名称':date == 'log-wLog'?'周志名称':'月至名称'">
             <el-input v-model="form.name"></el-input>
@@ -36,46 +45,184 @@
         </el-form>
       </el-tab-pane>
     </el-tabs>
+    <el-dialog
+      :title="dialogData.title"
+      :visible.sync="dialogVisible"
+      width="30%"
+      :before-close="handleClose"
+    >
+      <p>{{dialogData.data}}</p>
+      <p style="text-align:right">发布时间：{{dialogData.time}}</p>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 <script>
+import gql from "graphql-tag";
 export default {
   data() {
     return {
       activeName: "second",
-      date:"",
+      userId: "",
+      date: "",
+      dialogData: {},
+      dialogVisible: false,
       form: {
         name: "",
-        region: "",
         date1: "",
         date2: "",
-        delivery: false,
-        type: [],
-        resource: "",
         desc: ""
       },
-      tableData:[{
-          title:"asda",
-          data:"adsadsadasda",
-          time:"1667.450.."
-      }]
+      tableData: [
+        {
+          title: "asda",
+          data: "adsadsadasda",
+          time: "1667.450.."
+        }
+      ]
     };
   },
   created() {
     this.date = this.$route.query.date;
     // console.log(this.date);
+    this.userId = parseInt(this.$route.query.id);
+    this.$apollo
+        .mutate({
+          // Query
+          mutation: gql`
+            query($id:Int){
+              memberDiary{
+                search(memberId:$id){
+                  title
+                  content
+                  type
+                  create_time
+                }
+              }
+            }
+          `,
+          // Parameters
+          variables: {
+            id:this.userId
+          }
+        })
+        .then(data => {
+          // console.log(this.form);
+          console.log(data);
+          this.tableData = data.data.memberDiary.search;
+          // alert("添加成功")
+          // this.$router.push({ path: "/info", query: { isManage: 0,id:data.data.member.login.id } });
+        })
+        .catch(error => {
+          console.log(error);
+        });
   },
-  watch:{
-    $route(to,from){
+  watch: {
+    $route(to, from) {
       this.date = this.$route.query.date;
+      this.$apollo
+        .mutate({
+          // Query
+          mutation: gql`
+            search(memberId:$id){
+              memberDiary{
+                detail(id: $id) {
+                  title
+                  content
+                  type
+                  create_time
+                }
+              }
+            }
+          `,
+          // Parameters
+          variables: {
+            id:this.userId
+          }
+        })
+        .then(data => {
+          // console.log(this.form);
+          console.log(data);
+          // alert("添加成功")
+          // this.$router.push({ path: "/info", query: { isManage: 0,id:data.data.member.login.id } });
+        })
+        .catch(error => {
+          console.log(error);
+        });
     }
   },
   methods: {
     onSubmit() {
-      console.log("submit!");
+      if (this.form.name == "") {
+        alert("请填写标题");
+        return;
+      } else if (this.form.desc == "") {
+        alert("请填写内容");
+        return;
+      } else if (this.form.date1 == "" || this.form.date2 == "") {
+        alert("请输入发布时间");
+        return;
+      }
+      // console.log(this.form);
+      this.$apollo
+        .mutate({
+          // Query
+          mutation: gql`
+            mutation(
+              $title: String
+              $content: String
+              $type: String
+              $memberId: Int
+            ) {
+              memberDiary {
+                create(
+                  title: $title
+                  content: $content
+                  type: $type
+                  memberId: $memberId
+                ) {
+                  memberId {
+                    id
+                  }
+                }
+              }
+            }
+          `,
+          // Parameters
+          variables: {
+            title: this.form.name,
+            content: this.form.desc,
+            type:this.date == "log-dLog"? "10": this.date == "log-wLog"? "20": "30",
+            memberId: this.userId
+          }
+        })
+        .then(data => {
+          // console.log(this.form);
+          console.log(data);
+          alert("添加成功");
+          // this.$router.push({ path: "/info", query: { isManage: 0,id:data.data.member.login.id } });
+        })
+        .catch(error => {
+          console.log(error);
+        });
     },
     handleClick(tab, event) {
       console.log(tab, event);
+    },
+    editPerson(row) {
+      console.log(row);
+      this.dialogData = row;
+      this.dialogVisible = !this.dialogVisible;
+    },
+    handleClose(done) {
+      this.$confirm("确认关闭？")
+        .then(_ => {
+          done();
+        })
+        .catch(_ => {});
     }
   }
 };

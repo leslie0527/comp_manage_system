@@ -11,7 +11,7 @@
     >
       <el-menu-item index="info">{{isManage == 1?"员工个人信息":"个人信息"}}</el-menu-item>
       <el-submenu index="log">
-        <template slot="title">日志</template>
+        <template slot="title">工作记录</template>
         <el-menu-item index="log-dLog">日志</el-menu-item>
         <el-menu-item index="log-wLog">周志</el-menu-item>
         <el-menu-item index="log-mLog">月至</el-menu-item>
@@ -31,11 +31,14 @@ export default {
   data() {
     return {
         activeIndex:"info",
-        isManage:1
+        isManage:1,
+        userId:""
     };
   },
   created(){
     this.isManage = this.$route.query.isManage;
+    this.userId = parseInt(this.$route.query.id);
+    console.log(this.$route.query.id);
     console.log(this.$route.query.isManage)
   },
   methods: {
@@ -43,10 +46,10 @@ export default {
         // console.log(keyPath);
       switch(keyPath[0]){
           case "info":
-                this.$router.push({path:'/Info',query:{isManage:this.isManage}})
+                this.$router.push({path:'/Info',query:{isManage:this.isManage,id:this.userId}})
                 break;
                 case "log":
-                this.$router.push({path:'/log',query:{date:keyPath[1]}})
+                this.$router.push({path:'/log',query:{date:keyPath[1],id:this.userId}})
                 break;
                 default:
                 this.$router.push('/')

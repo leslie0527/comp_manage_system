@@ -4,6 +4,7 @@ import Login from '@/components/Login'
 import Index from '@/components/Index'
 import info from '@/components/Info'
 import log from '@/components/Log'
+import adminLogin from '@/components/adminLogin'
 
 Vue.use(Router)
 
@@ -12,7 +13,18 @@ export default new Router({
     {
       path: '/',
       name: 'Login',
-      component: Login
+      component: Login,
+      meta:{
+        isLogin:false
+      }
+    },
+    {
+      path:'/adminLogin',
+      name:'adminLogin',
+      component:adminLogin,
+      meta:{
+        isLogin:false
+      }
     },
     {
       path: '/Index',
@@ -21,11 +33,17 @@ export default new Router({
       children:[
         {
           path:'/info',
-          component:info
+          component:info,
+          meta:{
+            isLogin:true
+          }
         },
         {
           path:'/log',
-          component:log
+          component:log,
+          meta:{
+            isLogin:true
+          }
         }
       ]
     }

@@ -15,10 +15,12 @@
   </div>
 </template>
 <script>
+import gql from "graphql-tag";
 export default {
   data() {
     return {
       clientHeight: "",
+      userId:null,
       form: {
         username: "",
         userpwd: ""
@@ -43,7 +45,41 @@ export default {
         });
         return;
       }
-      this.$router.push({path:"/info",query:{isManage:1}})
+      this.$apollo
+        .mutate({
+          // Query
+          mutation: gql`
+            query($username:String,$password:String){
+              member {
+                login(username: $username, password: $password) {
+                  id
+                  username
+                  password
+                  create_time
+                  update_time
+                }
+              }
+            }
+          `,
+          // Parameters
+          variables: {
+            username: this.form.username,
+            password: this.form.password
+          }
+        })
+        .then(data => {
+          // console.log(this.form);
+          console.log(data);
+          if(data.data.member.login.id == 1){
+              this.$router.push({path:"/info",query:{isManage:1,id:data.data.member.login.id}})
+          }else{
+            alert('非管理员不能登陆');
+            return;
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
       }
   }
 };

@@ -7,7 +7,11 @@
             <el-table-column prop="title" label="标题" width="200"></el-table-column>
             <el-table-column prop="content" label="内容" width="500"></el-table-column>
             <el-table-column prop="create_time" label="时间" width="200"></el-table-column>
-            <el-table-column prop="type" width="200"></el-table-column>
+            <el-table-column prop="type" label="类型" width="200">
+              <template slot-scope="scope">
+                {{tableData[scope.$index].type==null?"暂无类型定义":tableData[scope.$index].type==10?"日志":tableData[scope.$index].type==20?"周志":"月志"}}
+              </template>
+            </el-table-column>
             <el-table-column fixed="right" label="操作" width="100">
               <template slot-scope="scope">
                 <el-button type="text" @click="editPerson(scope.row)" size="small">查看详情</el-button>
@@ -51,8 +55,8 @@
       width="30%"
       :before-close="handleClose"
     >
-      <p>{{dialogData.data}}</p>
-      <p style="text-align:right">发布时间：{{dialogData.time}}</p>
+      <p>{{dialogData.content}}</p>
+      <p style="text-align:right">发布时间：{{dialogData.create_time}}</p>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
@@ -68,6 +72,7 @@ export default {
       activeName: "second",
       userId: "",
       date: "",
+      isManage: "",
       dialogData: {},
       dialogVisible: false,
       form: {
@@ -76,26 +81,54 @@ export default {
         date2: "",
         desc: ""
       },
-      tableData: [
-        {
-          title: "asda",
-          data: "adsadsadasda",
-          time: "1667.450.."
-        }
-      ]
+      tableData: []
     };
   },
   created() {
     this.date = this.$route.query.date;
     // console.log(this.date);
     this.userId = parseInt(this.$route.query.id);
-    this.$apollo
+    this.isManage = parseInt(this.$route.query.isManage);
+    if (this.isManage) {
+      this.$apollo
         .mutate({
           // Query
           mutation: gql`
-            query($id:Int){
-              memberDiary{
-                search(memberId:$id){
+            query {
+              memberDiary {
+                search {
+                  id
+                  title
+                  content
+                  type
+                  memberId {
+                    id
+                    username
+                  }
+                }
+              }
+            }
+          `,
+          // Parameters
+        })
+        .then(data => {
+          // console.log(this.form);
+          console.log(data);
+          this.tableData = data.data.memberDiary.search;
+          // alert("添加成功")
+          // this.$router.push({ path: "/info", query: { isManage: 0,id:data.data.member.login.id } });
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    } else {
+      this.$apollo
+        .mutate({
+          // Query
+          mutation: gql`
+            query($id: Int) {
+              memberDiary {
+                search(memberId: $id) {
                   title
                   content
                   type
@@ -106,7 +139,7 @@ export default {
           `,
           // Parameters
           variables: {
-            id:this.userId
+            id: this.userId
           }
         })
         .then(data => {
@@ -119,6 +152,7 @@ export default {
         .catch(error => {
           console.log(error);
         });
+    }
   },
   watch: {
     $route(to, from) {
@@ -140,7 +174,7 @@ export default {
           `,
           // Parameters
           variables: {
-            id:this.userId
+            id: this.userId
           }
         })
         .then(data => {
@@ -195,7 +229,12 @@ export default {
           variables: {
             title: this.form.name,
             content: this.form.desc,
-            type:this.date == "log-dLog"? "10": this.date == "log-wLog"? "20": "30",
+            type:
+              this.date == "log-dLog"
+                ? "10"
+                : this.date == "log-wLog"
+                ? "20"
+                : "30",
             memberId: this.userId
           }
         })

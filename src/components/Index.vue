@@ -38,8 +38,8 @@ export default {
   created(){
     this.isManage = this.$route.query.isManage;
     this.userId = parseInt(this.$route.query.id);
-    console.log(this.$route.query.id);
-    console.log(this.$route.query.isManage)
+    // console.log(this.$route.query.id);
+    // console.log(this.$route.query.isManage)
   },
   methods: {
     handleSelect(key, keyPath) {
@@ -49,10 +49,10 @@ export default {
                 this.$router.push({path:'/Info',query:{isManage:this.isManage,id:this.userId}})
                 break;
                 case "log":
-                this.$router.push({path:'/log',query:{date:keyPath[1],id:this.userId}})
+                this.$router.push({path:'/log',query:{date:keyPath[1],isManage:this.isManage,id:this.userId}})
                 break;
                 default:
-                this.$router.push('/')
+                this.$router.push({path:'/ClockIn',query:{isManage:this.isManage,id:this.userId}})
       }
     }
   }

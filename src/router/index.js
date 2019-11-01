@@ -5,6 +5,7 @@ import Index from '@/components/Index'
 import info from '@/components/Info'
 import log from '@/components/Log'
 import adminLogin from '@/components/adminLogin'
+import ClockIn from "@/components/ClockIn"
 
 Vue.use(Router)
 
@@ -44,7 +45,14 @@ export default new Router({
           meta:{
             isLogin:true
           }
-        }
+        },
+        {
+          path:'/ClockIn',
+          component:ClockIn,
+          meta:{
+            isLogin:ClockIn
+          }
+        },
       ]
     }
   ]

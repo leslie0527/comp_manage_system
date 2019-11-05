@@ -3,7 +3,7 @@
     <div @click="qiandao" style="width:100px;height:100px;border-radius:50%;background:#3477f6;margin:auto;border:10px solid rgba(99,100,240,1);text-align:center;line-height:100px;color:white;font-size:24px;">
       签到
     </div>
-    <el-table :data="tableData" style="width: 100%">
+    <el-table :data="tableData" style="width: 70%;margin:auto">
       <el-table-column label="日期" width="500">
         <template slot-scope="scope">
           <i class="el-icon-time"></i>

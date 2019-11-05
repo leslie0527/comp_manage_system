@@ -9,7 +9,7 @@
       <!-- <input class="input" type="text" name="username" id="username"> -->
       <el-input v-model="inputName" placeholder="请输入用户名称"></el-input>
       <p style="color:white">用户密码</p>
-      <el-input v-model="inputPwd" placeholder="请输入用户密码"></el-input>
+      <el-input v-model="inputPwd" type="password" placeholder="请输入用户密码"></el-input>
       <div>
         <el-button type="primary" @click="onSubmit">登陆</el-button>
         <el-button @click="onReg">注册</el-button>
@@ -73,7 +73,7 @@ export default {
         .mutate({
           // Query
           mutation: gql`
-            mutation {
+            mutation($username:String,$password:String){
               member {
                 register(username: $username, password: $password) {
                   id
@@ -94,6 +94,7 @@ export default {
         .then(data => {
           // console.log(this.form);
           console.log(data);
+          this.$message("注册成功，请登陆");
           // this.$router.push({ path: "/info", query: { isManage: 0 } });
         })
         .catch(error => {

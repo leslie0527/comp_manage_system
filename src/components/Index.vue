@@ -5,7 +5,7 @@
       class="el-menu-demo"
       mode="horizontal"
       @select="handleSelect"
-      background-color="#545c64"
+      background-color="#2068b0"
       text-color="#fff"
       active-text-color="#ffd04b"
     >
@@ -21,7 +21,7 @@
         <a href="https://www.ele.me" target="_blank">订单管理</a>
       </el-menu-item>-->
     </el-menu>
-    <div class="child">
+    <div class="child" :style="clientHeight">
       <router-view></router-view>
     </div>
   </div>
@@ -32,7 +32,8 @@ export default {
     return {
         activeIndex:"info",
         isManage:1,
-        userId:""
+        userId:"",
+        clientHeight:""
     };
   },
   created(){
@@ -40,6 +41,9 @@ export default {
     this.userId = parseInt(this.$route.query.id);
     // console.log(this.$route.query.id);
     // console.log(this.$route.query.isManage)
+  },
+  mounted(){
+    this.clientHeight =   `height:${document.documentElement.clientHeight-60}px`
   },
   methods: {
     handleSelect(key, keyPath) {
@@ -59,4 +63,10 @@ export default {
 };
 </script>
 <style>
+.child{
+  background:#b1ccea;
+  /* 
+  background-size: 100% 100%; */
+  /* padding-bottom: 100px; */
+}
 </style>

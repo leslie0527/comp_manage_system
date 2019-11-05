@@ -157,35 +157,6 @@ export default {
   watch: {
     $route(to, from) {
       this.date = this.$route.query.date;
-      this.$apollo
-        .mutate({
-          // Query
-          mutation: gql`
-            search(memberId:$id){
-              memberDiary{
-                detail(id: $id) {
-                  title
-                  content
-                  type
-                  create_time
-                }
-              }
-            }
-          `,
-          // Parameters
-          variables: {
-            id: this.userId
-          }
-        })
-        .then(data => {
-          // console.log(this.form);
-          console.log(data);
-          // alert("添加成功")
-          // this.$router.push({ path: "/info", query: { isManage: 0,id:data.data.member.login.id } });
-        })
-        .catch(error => {
-          console.log(error);
-        });
     }
   },
   methods: {
@@ -269,5 +240,8 @@ export default {
 <style>
 .body {
   padding: 10px;
+}
+.el-form-item__label,.el-tabs__item{
+  color: #000;
 }
 </style>

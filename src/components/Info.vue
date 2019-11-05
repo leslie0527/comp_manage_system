@@ -34,7 +34,7 @@
         </el-table-column>
       </el-table>
     </el-main>
-    <el-form ref="form" :model="form" label-width="80px" v-else>
+    <el-form ref="form" :model="form" label-width="80px"  label-position="right" v-else>
       <el-upload
         class="avatar-uploader"
         action="https://jsonplaceholder.typicode.com/posts/"
@@ -53,18 +53,18 @@
       </el-form-item>
       <el-form-item label="性别">
         <el-radio-group v-model="form.sex">
-          <el-radio label="男"></el-radio>
-          <el-radio label="女"></el-radio>
+          <el-radio label="先生"></el-radio>
+          <el-radio label="女士" class="radio"></el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="状态">
         <el-radio-group v-model="form.state">
           <el-radio label="在职"></el-radio>
-          <el-radio label="离职"></el-radio>
+          <el-radio label="离职" class="radio"></el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="所属部门">
-        <el-radio-group v-model="form.dep">
+        <el-radio-group v-model="form.dep" class="el-radio-group1">
           <el-radio :label="item.id" v-for="(item,key) in depArr" v-bind:key="key">{{item.name}}</el-radio>
         </el-radio-group>
       </el-form-item>
@@ -85,8 +85,8 @@
         </el-form-item> -->
         <el-form-item label="性别">
           <el-radio-group v-model="form.sex">
-            <el-radio label="男"></el-radio>
-            <el-radio label="女"></el-radio>
+            <el-radio label="先生"></el-radio>
+            <el-radio label="女士"></el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="状态" label-width="120px">
@@ -120,13 +120,13 @@ export default {
       // imageUrl: '',
       form: {
         id:"",
-        name: "王小虎",
-        num: "NO.1",
-        sex: "男",
-        state: "在职",
-        dep: "销售",
+        name: "",
+        num: "",
+        sex: "",
+        state: "",
+        dep: "",
         imageUrl: "",
-        quitTime: "2099-12-31",
+        quitTime: "",
         numbered: "",
         basic:""
       },
@@ -448,4 +448,24 @@ export default {
   height: 178px;
   display: block;
 }
+.el-form{
+  width:600px;
+  margin: auto;
+}
+.el-radio{
+  color:#000;
+}
+.el-radio-group1{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+.el-form-item__label{
+  color:#000;
+}
+.radio{
+  margin-left: 32px;
+}
+
 </style>

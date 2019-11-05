@@ -87,7 +87,8 @@ export default {
 <style>
 .body {
   width: 100%;
-  background: #333;
+  background: url("../assets/img/bg.jpg") no-repeat;
+  background-size: 100% 100%;
 }
 .title {
   color: white;
@@ -96,7 +97,7 @@ export default {
 .form {
   width: 500px;
   height: 300px;
-  background: #003371;
+  background: #b1ccea;
   border-radius: 10px;
   margin-left: 50%;
   margin-top: 10%;
@@ -109,6 +110,6 @@ export default {
   text-align: center;
 }
 .el-form-item__label{
-    color:white;
+    color:#000;
 }
 </style>
